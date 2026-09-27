@@ -78,6 +78,13 @@ def main(grid: Grid, context: Context) -> None:
     history_csv = merge_client_history(context.run_id, strategy, get_loader(context))
     save_round_summary(result, algorithm, num_rounds)
 
+    # Audit FeTS-standard communication cost
+    try:
+        from utils.communication import audit_communication_cost
+        audit_communication_cost(history_csv, num_rounds, context)
+    except Exception as exc:
+        print(f"[Server] Communication audit skipped: {exc}", flush=True)
+
     # Generate paper figures automatically once all client-history rows are merged.
     try:
         from utils.plot import generate_all_paper_figures

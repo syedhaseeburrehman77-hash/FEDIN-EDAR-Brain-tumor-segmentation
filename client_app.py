@@ -11,6 +11,7 @@ from task import load_data, test as test_fn
 from algorithms import get_trainer
 from models import create_model
 from utils.summary import append_client_history
+from utils.communication import measure_model_payload
 
 from models.unet import instance_norm_state_keys
 from algorithms.fedindar import (
@@ -220,6 +221,7 @@ def train(msg: Message, context: Context):
     metrics = {
         "train_loss": train_loss,
         "num-examples": len(trainloader.dataset),
+        **measure_model_payload(model),
     }
 
     if device.type == "cuda":

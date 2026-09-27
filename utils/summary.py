@@ -12,6 +12,7 @@ CLIENT_HISTORY_FIELDS = (
     "pred_et_voxels", "pred_tc_voxels", "pred_wt_voxels",
     "target_et_voxels", "target_tc_voxels", "target_wt_voxels",
     "time_sec", "aggregation_weight",
+    "comm_bytes_uplink", "comm_bytes_downlink", "comm_bytes_total",
     "institution", "total_cases", "train_cases", "val_cases",
 )
 
