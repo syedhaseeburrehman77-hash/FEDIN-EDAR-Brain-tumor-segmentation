@@ -182,4 +182,76 @@ def save_round_summary(result, algorithm: str, num_rounds: int) -> pd.DataFrame:
     df.to_csv(out_path, index=False)
     print(f"[Server] Round results saved to CSV: {out_path}\n", flush=True)
 
+    # 3. Calculate and display FeTS Communication Cost Audit
+    try:
+        compute_communication_cost(
+            arrays=getattr(result, "arrays", None),
+            algorithm=algorithm,
+            num_rounds=num_rounds,
+        )
+    except Exception:
+        pass
+
     return df
+
+
+def compute_communication_cost(
+    arrays=None,
+    algorithm: str = "fedindar",
+    num_rounds: int = 10,
+    total_clients: int = 33,
+    participating_clients: int = 6,
+) -> dict[str, float]:
+    """Calculate and format FeTS-standard communication cost and payload savings."""
+    model_bytes = 18.374 * 1024 * 1024
+    if arrays is not None and hasattr(arrays, "to_torch_state_dict"):
+        try:
+            st = arrays.to_torch_state_dict()
+            model_bytes = sum(t.numel() * t.element_size() for t in st.values())
+        except Exception:
+            pass
+
+    model_mb = model_bytes / (1024 * 1024)
+    per_client_round_mb = 2 * model_mb  # Downlink (Server->Client) + Uplink (Client->Server)
+
+    is_fedindar = str(algorithm).lower() == "fedindar"
+    active_rounds = max(num_rounds - 1, 1) if is_fedindar else num_rounds
+
+    actual_client_rounds = active_rounds * participating_clients
+    baseline_client_rounds = num_rounds * total_clients
+
+    # Bandwidth in GB
+    actual_data_gb = (actual_client_rounds * per_client_round_mb) / 1024
+    baseline_data_gb = (baseline_client_rounds * per_client_round_mb) / 1024
+
+    fets_comm_cost = actual_client_rounds / baseline_client_rounds
+    bandwidth_savings = (1.0 - (actual_data_gb / baseline_data_gb)) * 100
+
+    report = {
+        "model_size_mb": round(model_mb, 2),
+        "per_client_round_mb": round(per_client_round_mb, 2),
+        "active_clients_per_round": participating_clients,
+        "total_rounds": num_rounds,
+        "actual_client_rounds": actual_client_rounds,
+        "baseline_client_rounds": baseline_client_rounds,
+        "actual_data_gb": round(actual_data_gb, 2),
+        "baseline_data_gb": round(baseline_data_gb, 2),
+        "fets_comm_cost_ratio": round(fets_comm_cost, 4),
+        "bandwidth_savings_pct": round(bandwidth_savings, 2),
+    }
+
+    # Print formatted audit
+    header = "FEDERATED LEARNING COMMUNICATION COST AUDIT"
+    print(f"\n{'=' * 78}\n{header:^78}\n{'=' * 78}")
+    print(f" Model Payload (Single Direction)   : {report['model_size_mb']} MB")
+    print(f" Per-Client Round Payload (Down+Up) : {report['per_client_round_mb']} MB")
+    print(f" Active Clients per Round           : {participating_clients} (Sliding Selection)")
+    print(f" Total Communication Rounds         : {num_rounds}")
+    print(f"{'-' * 78}")
+    print(f" Baseline Network Data (All Clients): {report['baseline_data_gb']} GB ({baseline_client_rounds} client-rounds)")
+    print(f" Actual Network Data Transmitted    : {report['actual_data_gb']} GB ({actual_client_rounds} client-rounds)")
+    print(f" FeTS Comm. Cost Ratio (Table 3)    : {report['fets_comm_cost_ratio']} (Baseline = 1.0000)")
+    print(f" Bandwidth Savings vs Full FL       : {report['bandwidth_savings_pct']}% Reduction")
+    print(f"{'=' * 78}\n")
+
+    return report
