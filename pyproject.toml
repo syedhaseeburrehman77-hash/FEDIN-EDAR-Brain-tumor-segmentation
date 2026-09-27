@@ -61,15 +61,15 @@ global-test-fraction = 0.15
 fraction-fit = 1.0
 num-clients = 23
 safe-model = true
-algorithm = "regsimagg"
+algorithm = "fedavg"
 proximal_mu = 0.01
 model_name = "3DUnet"
 
 # Client Participation ("fixed" or "sliding")
-collaborator-selector = "sliding"
+collaborator-selector = "fixed"
 collaborator-fraction = 0.2
 collaborator-selector-seed = 42
 
 # RegSimAgg Hyperparameters (Temporal Damping & Distance Metric)
-regsimagg-regularization-round = 5
+regsimagg-regularization-round = 10
 regsimagg-distance-mode = "paper_l1"
