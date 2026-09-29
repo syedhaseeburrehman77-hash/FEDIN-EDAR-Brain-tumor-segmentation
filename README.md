@@ -55,14 +55,14 @@ You can run your Flower project in both _simulation_ and _deployment_ mode witho
 > This example runs faster when the `ClientApp`s have access to a GPU. Check the [Simulation Engine documentation](https://flower.ai/docs/framework/how-to-run-simulations.html) to learn more about Flower simulations and how to optimize them.
 
 ```bash
-# Run with the default federation (CPU only)
+# Run with the default federation
 flwr run .  --stream
 ```
 
 You can also override some of the settings for your `ClientApp` and `ServerApp` defined in `pyproject.toml`. For example:
 
 ```bash
-flwr run . --run-config "num-server-rounds=5 learning-rate=0.05"  --stream
+flwr run . --run-config "num-server-rounds=21 learning-rate=0.00005"  --stream
 ```
 
 > [!TIP]
@@ -76,6 +76,6 @@ Follow this [how-to guide](https://flower.ai/docs/framework/how-to-run-flower-wi
 ### Dataset
 The following dataset is used in this repository.
 
-[Brain tumor multimodal image (CT & MRI)](https://www.kaggle.com/datasets/murtozalikhon/brain-tumor-multimodal-image-ct-and-mri)
+[FeTS2022)](https://www.synapse.org/Synapse:syn28546456/wiki/633440)
 
 If you are already familiar with how the Deployment Engine works, you may want to learn how to run it using Docker. Check out the [Flower with Docker](https://flower.ai/docs/framework/docker/index.html) documentation.
