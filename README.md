@@ -82,13 +82,12 @@ To explicitly customize settings (e.g., 21 communication rounds on 33 institutio
 ```powershell
 flwr run . --stream --run-config 'algorithm="fedindar" num-server-rounds=21 num-clients=33 collaborator-selector="sliding"'
 ```
-```
 
 ### Switching Between Partitioning 1 and Partitioning 2
 Before Runing command to run, you can easily switch between partitioning file in `pyproject.toml` by changing path
 
-- **Partitioning 1:** 23 Clinical Institutions (`num-clients = 23`— *Default*)
-- **Partitioning 2:** 33 Clinical Institutions (`num-clients = 33`)
+- **Partitioning 1:** 23 Clinical Institutions (`num-clients = 23`)
+- **Partitioning 2:** 33 Clinical Institutions (`num-clients = 33`— *Default*)
 
 ### Dataset
 The following dataset is used in this repository.
