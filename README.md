@@ -1,77 +1,94 @@
 ---
-tags: [quickstart, vision, fds]
-dataset: [CIFAR-10]
-framework: [torch, torchvision]
+tags: [vision, medical, segmentation, fets, fds]
+dataset: [FeTS 2022]
+framework: [PyTorch, MONAI, NumPy & SciPy and Pandas]
+---
+# Federated 3D Brain Tumor Segmentation with FedIN-EDAR and Flower
+This project implements **FedIN-EDAR**, an adaptive and communication-efficient federated learning framework for 3D multi-parametric brain tumor segmentation on the multi-institutional **FeTS 2022** benchmark using **Flower** and **PyTorch/MONAI**.
 ---
 
-# Federated Learning with PyTorch and Flower (Quickstart Example)
+## Proposed Method Overview: FedIN-EDAR
+**FedIN-EDAR** (**Fed**erated **I**nstance **N**ormalization with **E**MD and **D**ivergence-**A**ware **A**daptive **R**egularization) is a communication-frugal, domain-generalizable federated learning framework designed for multi-institutional 3D brain tumor segmentation under severe scanner and label heterogeneity (FeTS 2022).
 
-This introductory example to Flower uses PyTorch, but deep knowledge of PyTorch is not necessarily required to run the example. However, it will help you understand how to adapt Flower to your use case. Running this example in itself is quite easy. This example uses [Flower Datasets](https://flower.ai/docs/datasets/) to download, partition and preprocess the CIFAR-10 dataset.
+### How It Works (4 Simple Steps):
+1. **Local Normalization (FedIN):**
+   - Keeps scanner-specific adjustments (Instance Normalization) local to each hospital. This stops scanner differences from confusing the shared global model.
+2. **Tumor Size Profiling (EMD):**
+   - In the first round, each hospital creates a simple profile (histogram) of its patient tumor sizes. The server uses Earth Mover's Distance (EMD) to measure how different each hospital's data is from the global average.
+3. **Smart Hospital Regularization (EDAR):**
+   - If a hospital has very unusual data, the system automatically applies a customized penalty (proximal term) to keep its training stable. This prevents outlier hospitals from pulling the shared model off track.
+4. **Smart Scheduling (Saving Bandwidth):**
+   - Instead of asking every hospital to send huge models in every round, it intelligently selects only a small subset of hospitals per round by using coolaborator selector. This allows the model to converge in just **21 rounds** while saving massive internet bandwidth.
 
-## Set up the project
+### Key Results (FeTS 2022 Benchmark):
+- **High Accuracy on New Hospitals:**
+  - **Partitioning 1 (23 Hospitals):** Achieves **81.69%** Whole Tumor (WT), **74.18%** Tumor Core (TC), and **70.88%** Enhancing Tumor (ET) Dice score on global test set data from hospitals never seen during training.
 
-### Fetch the app
+  - **Partitioning 2 (33 Hospitals):** Achieves **73.58%** WT and **62.18%** TC Dice score on unseen test data.
 
-Install Flower:
+- **Over 82% Bandwidth Savings:** Uses only **2.87 GB to 4.31 GB** of network data instead of the standard 17 GB to 24 GB required by traditional federated learning.
 
-```shell
-pip install flwr
-```
+- **$4\times$ More Efficient:** Transmits nearly 4 times less data than the FeTS 2022 challenge 3rd-place benchmark (RegSimAgg).
 
-Fetch the app:
+- **Fast Convergence:** Reaches high performance in only **21 rounds**, compared to hundreds of rounds required by traditional methods.
+---
 
-```shell
-flwr new @flwrlabs/quickstart-pytorch
-```
+## Environment Setup & Installation
 
-This will create a new directory called `quickstart-pytorch` with the following structure:
+Follow these simple steps to set up the project on your machine (tested on Windows PowerShell with Python 3.12.10):
 
-```shell
-quickstart-pytorch
-├── pytorchexample
-│   ├── __init__.py
-│   ├── client_app.py   # Defines your ClientApp
-│   ├── server_app.py   # Defines your ServerApp
-│   └── task.py         # Defines your model, training and data loading
-├── pyproject.toml      # Project metadata like dependencies and configs
-└── README.md
-```
-
-### Install dependencies and project
-
-Install the dependencies defined in `pyproject.toml` as well as the `pytorchexample` package.
+### 1. Clone the Repository
 
 ```bash
+git clone https://github.com/syedhaseeburrehman77-hash/FEDIN-EDAR-Brain-tumor-segmentation
+```
+
+### 2. Environment Setup
+
+```powershell
+# Allow script execution for the current session
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+# Create virtual environment
+python -m venv .venv
+
+# Activate the virtual environment
+.\.venv\Scripts\Activate.ps1
+
+# Verify Python version
+python --version
+# Output: Python 3.12.10
+```
+
+### 3. Install Dependencies and Project
+
+Install the local package in editable mode along with all required dependencies defined in `pyproject.toml` (PyTorch, MONAI, Flower, SciPy, etc.):
+
+```powershell
 pip install -e .
 ```
 
-## Run the project
+### Run Proposed Method (FedIN-EDAR)
 
-You can run your Flower project in both _simulation_ and _deployment_ mode without making changes to the code. If you are starting with Flower, we recommend you using the _simulation_ mode as it requires fewer components to be launched manually. By default, `flwr run` will make use of the Simulation Engine.
+Run our proposed FedIN-EDAR strategy on the full FeTS 2022 benchmark:
 
-### Run with the Simulation Engine
-
-> [!TIP]
-> This example runs faster when the `ClientApp`s have access to a GPU. Check the [Simulation Engine documentation](https://flower.ai/docs/framework/how-to-run-simulations.html) to learn more about Flower simulations and how to optimize them.
-
-```bash
-# Run with the default federation (CPU only)
-flwr run .  --stream
+```powershell
+# Default full execution
+flwr run . --stream
 ```
 
-You can also override some of the settings for your `ClientApp` and `ServerApp` defined in `pyproject.toml`. For example:
+To explicitly customize settings (e.g., 21 communication rounds on 33 institutions):
 
-```bash
-flwr run . --run-config "num-server-rounds=5 learning-rate=0.05"  --stream
+```powershell
+flwr run . --stream --run-config 'algorithm="fedindar" num-server-rounds=21 num-clients=33 collaborator-selector="sliding"'
+```
 ```
 
-> [!TIP]
-> For a more detailed walk-through check our [quickstart PyTorch tutorial](https://flower.ai/docs/framework/tutorial-quickstart-pytorch.html)
+### Switching Between Partitioning 1 and Partitioning 2
+Before Runing command to run, you can easily switch between partitioning file in `pyproject.toml` by changing path
 
-### Run with the Deployment Engine
-
-Follow this [how-to guide](https://flower.ai/docs/framework/how-to-run-flower-with-deployment-engine.html) to run the same app in this example but with Flower's Deployment Engine. After that, you might be intersted in setting up [secure TLS-enabled communications](https://flower.ai/docs/framework/how-to-enable-tls-connections.html) and [SuperNode authentication](https://flower.ai/docs/framework/how-to-authenticate-supernodes.html) in your federation.
-
+- **Partitioning 1:** 23 Clinical Institutions (`num-clients = 23`— *Default*)
+- **Partitioning 2:** 33 Clinical Institutions (`num-clients = 33`)
 
 ### Dataset
 The following dataset is used in this repository.
