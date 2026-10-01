@@ -48,8 +48,8 @@ clientapp = "client_app:app"
 
 [tool.flwr.app.config]
 data-root = "data/MICCAI_FeTS2022_TrainingData"
-partition-csv = "data/MICCAI_FeTS2022_TrainingData/partitioning_1.csv"
-num-server-rounds = 5
+partition-csv = "data/MICCAI_FeTS2022_TrainingData/partitioning_2.csv"
+num-server-rounds = 10
 
 fraction-train = 1.0
 fraction-evaluate = 1.0
@@ -59,14 +59,14 @@ batch-size = 1
 global-test-fraction = 0.15
 
 fraction-fit = 1.0
-num-clients = 23
+num-clients = 33
 safe-model = true
-algorithm = "fedavg"
+algorithm = "fedindar"
 proximal_mu = 0.01
 model_name = "3DUnet"
 
 # Client Participation ("fixed" or "sliding")
-collaborator-selector = "fixed"
+collaborator-selector = "sliding"
 collaborator-fraction = 0.2
 collaborator-selector-seed = 42
 
