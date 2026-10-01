@@ -93,6 +93,6 @@ Before Runing command to run, you can easily switch between partitioning file in
 ### Dataset
 The following dataset is used in this repository.
 
-[Brain tumor multimodal image (CT & MRI)](https://www.kaggle.com/datasets/murtozalikhon/brain-tumor-multimodal-image-ct-and-mri)
+[FeTS2022)](https://www.synapse.org/Synapse:syn28546456/wiki/633440)
 
 If you are already familiar with how the Deployment Engine works, you may want to learn how to run it using Docker. Check out the [Flower with Docker](https://flower.ai/docs/framework/docker/index.html) documentation.
